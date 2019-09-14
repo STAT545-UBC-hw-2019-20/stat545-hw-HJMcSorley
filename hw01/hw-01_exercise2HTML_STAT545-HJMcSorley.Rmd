@@ -1,0 +1,131 @@
+---
+title: "STAT 545 hw-01 (gapminder)"
+author: "Hannah J McSorley"
+date: "September 11, 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Homework 1, Exercise 2
+
+This is the second exercise in assignment one for STAT 545. The goal of this exercise is to explore a dataset and create a GitHub-readable output using R Markdown. 
+
+## 'gapminder' dataset 
+
+This exercise uses the dataset 'gapminder', which includes information about life expectancy, GDP per capita and population by country and continent. First, load the 'gapminder' dataset into the workspace by calling it into the library. 
+
+```{r load_packages, warning = FALSE}
+# load the packages required for this analysis
+library(gapminder)
+```
+
+### Data structure 
+
+Explore the data structure and type by executing some simple commands.
+
+```{r gapminder}
+str(gapminder)  # structure
+class(gapminder)  # data type
+```
+
+Note that calling 'class()' was redundant because the output from calling 'str()' included the data class as well as the dataset's structure.
+
+## Dataset Exploration
+
+### Countries
+ 
+Identify how many countries are included in the gapminder dataset, and what they are.
+```{r countries}
+#  how many countries are included?
+length(unique(gapminder$country))
+# see if Canada is a country in the dataset
+any(gapminder$country == "Canada")
+```
+
+
+### Span of Dataset (Years)
+
+This dataset includes life expectancy ("lifeExp") in each country. What is the range of this data and how does it vary? Using the 'range()' function yeilds the lowest and highest end members in the data (min & max).
+
+```{r years}
+# what is the range of years included?
+range(gapminder$year)
+
+# what is the range of life expectancies across the world?
+range(gapminder$lifeExp)
+```
+
+### Life Expectancy
+
+Try to locate which country has the lowest and highest life expectancy...
+
+```{r lifeExpIndex}
+# which country had the lowest life expectancy?
+which(gapminder$lifeExp == min(gapminder$lifeExp))
+```
+
+Hmmm...that command returned the index location for the lowest life expectancy, but can I identify the information associate with that index (e.g. country, year, GDP) by subsetting the dataframe with that index?
+
+```{r lifeExp}
+# subset using the index command from above
+gapminder[which(gapminder$lifeExp == min(gapminder$lifeExp)), ]
+
+# what about the maximum life expectancy?
+gapminder[which(gapminder$lifeExp == max(gapminder$lifeExp)), ]
+```
+
+The lowest life expectancy (23.6 years) was in 1992 in Rwanda, Africa. The highest life expectacy (82.6 years) was in Japan, Asia in 2007. 
+
+### GDP match with Life Expectancy?
+
+Let's see if there is a match between min/max GDP and life expectancy, or population and life expectancy.
+
+```{r GDP_lifeExp}
+# is there a pattern between GDP and life expectancy?
+min(gapminder$gdpPercap) == min(gapminder$lifeExp)
+
+max(gapminder$gdpPercap) == max(gapminder$lifeExp)
+
+# is there a pattern between population size and life expectancy?
+min(gapminder$pop) == min(gapminder$lifeExp)
+
+max(gapminder$pop) == max(gapminder$lifeExp)
+```
+No, there was not a direct match between min/max GDP nor population with life expectancy.
+
+I imagine that life expectancy would have some relationship to GDP though... what if we plot those data together to visually explore that relationship?
+
+```{r plot}
+# use base R to plot global life expectancy with GDP
+plot(y = gapminder$lifeExp, x = gapminder$gdpPercap,
+     ylab = "life expectancy (yrs)", xlab = "GDP percapita")
+```
+
+### Canada, eh 
+
+I am Canadian, what was the most recent life expectancy in Canada? 
+
+```{r eh}
+# subset the gapminder data for Canada
+# save as an object
+Canada_df <- gapminder[gapminder$country == "Canada", ]
+
+# find minimum and maximum life expectancy
+Canada_df[which(Canada_df$lifeExp == min(Canada_df$lifeExp)), ]
+Canada_df[which(Canada_df$lifeExp == max(Canada_df$lifeExp)), ]
+```
+
+The life expectancy in Canada was lowest in the first recorded year of this dataset (1952, 68.8 years), and highest in the most recent recorded year (2007, 80.7 years). So, life expectancy has increased in Canada over the span of this dataset. 
+
+Let's plot that also!
+
+```{r plot_eh}
+# use base R to plot Canadian life expectancy over time
+plot(y = Canada_df$lifeExp, x = Canada_df$year,
+     ylab = "life expectancy (yrs)", xlab = "Year",
+     type = "b")
+```
+
