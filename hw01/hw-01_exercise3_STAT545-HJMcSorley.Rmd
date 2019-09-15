@@ -22,6 +22,8 @@ This exercise uses the same analysis of the 'gapminder' dataset as in hw01 Exerc
 library(gapminder)
 ```
 
+The dataset contains information on life expectancy, GDP per capita, and population by country.
+
 ## Data structure 
 
 Explore the data structure and type by executing some simple commands.
@@ -32,9 +34,9 @@ str(gapminder)  # structure
 
 Calling 'str()' yields lots of information about this dataset (length, data structure and type).
 
-## Dataset Exploration: Countries
+## Dataset Exploration | Countries
  
-Identify how many countries are included in the gapminder dataset, and what they are.
+Identify how many countries are included in the gapminder dataset (_Note:_ calling 'str()' showed this number as levels in the Factor 'country')
 ```{r countries}
 # see if Canada is a country in the dataset
 any(gapminder$country == "Canada")
@@ -42,9 +44,8 @@ any(gapminder$country == "Canada")
 #  how many countries are included?
 length(unique(gapminder$country))
 ```
-_Note:_ the number of countries was also indicated in the 'str(gapminder)' call.
 
-## Dataset Exploration: Span of Dataset (Years)
+## Dataset Exploration | Span of Dataset (Years)
 
 This dataset includes life expectancy ("lifeExp") in each country. What is the range of this data and how does it vary? Using the 'range()' function yields the lowest and highest end members in the data (min & max).
 
@@ -56,7 +57,7 @@ range(gapminder$year)
 range(gapminder$lifeExp)
 ```
 
-## Dataset Exploration: Life Expectancy
+## Dataset Exploration | Life Expectancy
 
 Identify countries with the lowest and highest life expectancy, and associated information.
 
@@ -67,7 +68,7 @@ gapminder[which(gapminder$lifeExp == min(gapminder$lifeExp)), ]
 ```
 The lowest life expectancy (23.6 years) was in 1992 in Rwanda, Africa. 
 
-## Dataset Exploration: Life Expectancy
+## Dataset Exploration | Life Expectancy
 
 ```{r}
 # maximum life expectancy?
@@ -77,24 +78,11 @@ gapminder[which(gapminder$lifeExp == max(gapminder$lifeExp)), ]
 The highest life expectancy (82.6 years) was in Japan, Asia in 2007. 
 
 
-## Dataset Exploration: GDP & Life Expectancy
-
-### Is there a positive relationship between life expectancy and GDP? Is the relationship linear?
 
 
-To visually explore the relationship between GDP and life expectancy, plot those data against each other. 
+## Dataset Exploration | Canada, eh 
 
-
-##
-```{r plot}
-# use base R to plot global life expectancy with GDP
-plot(y = gapminder$lifeExp, x = gapminder$gdpPercap,
-     ylab = "life expectancy (yrs)", xlab = "GDP percapita")
-```
-
-## Dataset Exploration: Canada, eh 
-
-When was Canadian life expectancy lowest and highest?
+When was Canadian life expectancy lowest?
 
 ```{r eh}
 # subset the gapminder data for Canada
@@ -106,6 +94,9 @@ Canada_df[which(Canada_df$lifeExp == min(Canada_df$lifeExp)), ]
 The life expectancy in Canada was lowest in the first recorded year of this dataset (1952, 68.8 years).
 
 ## Canada, eh
+
+When was Canadian life expectancy highest?
+
 ```{r}
 Canada_df[which(Canada_df$lifeExp == max(Canada_df$lifeExp)), ]
 ```
@@ -113,11 +104,24 @@ Canada_df[which(Canada_df$lifeExp == max(Canada_df$lifeExp)), ]
 Canadian life expectancy was highest in the most recent recorded year (2007, 80.7 years). 
 
 ## 
-Life expectancy in Canada has steadily increased over time from 1952-2007. 
 ```{r plot_eh}
 # use base R to plot Canadian life expectancy over time
 plot(y = Canada_df$lifeExp, x = Canada_df$year,
      ylab = "life expectancy (yrs)", xlab = "Year",
-     type = "b")
+     type = "b",
+     sub = "Life expectancy in Canada has steadily increased over time from 1952-2007.")
 ```
 
+## Dataset Exploration | GDP & Life Expectancy
+
+### Is there a positive relationship between life expectancy and GDP? Is the relationship linear?
+
+
+To visually explore the relationship between GDP and life expectancy, plot those data against each other. 
+
+##
+```{r plot}
+# use base R to plot global life expectancy with GDP
+plot(y = gapminder$lifeExp, x = gapminder$gdpPercap,
+     ylab = "life expectancy (yrs)", xlab = "GDP percapita")
+```
