@@ -4,7 +4,7 @@ author: "Hannah J McSorley"
 date: "September 11, 2019"
 output: 
   pdf_document:
-latex_engine: lualatex
+    latex_engine: pdflatex
 sansfont: Calibri Light
 ---
 
