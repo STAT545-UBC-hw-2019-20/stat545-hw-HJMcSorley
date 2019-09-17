@@ -1,0 +1,22 @@
+---
+title: "hw01_README"
+author: "Hannah McSorley"
+date: "17/09/2019"
+output:
+  html_document:
+    theme: cerulean
+---
+
+## Homework 01 Folder
+
+This folder is dedicated to STAT 545 [Homework Assignment 1](https://stat545.stat.ubc.ca/evaluation/hw01/hw01/) (hw01).
+
+__The objective__ of this assignment was to use the tools of GitHub, R Studio and R Markdown, and git (version control). \
+
+hw01 had three exercises associated with it: 
+
+* __E1__ -- update the homework repo README.md file using markdown
+* __E2__ -- Explore the 'gapminder' dataset and create a pdf_document OR github_document output (see ['Tidy Submission'](https://stat545.stat.ubc.ca/evaluation/assignments/)) that showcases the dataset
+* __E3__ -- Show the 'gapminder' dataset exploration as a slideshow presentation (e.g. ioslides)
+
+
