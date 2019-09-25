@@ -15,6 +15,8 @@ The Objective of this assignment is the practice using ggplot2 and dplyr to expl
 ```{r}
 library(gapminder)
 library(tidyverse)  # included package 'dplyr'
+library(tsibble)
+library(knitr)  # tidy tables
 ```
 
 ## 'dplyr' function focus
@@ -95,5 +97,205 @@ Filter gapminder to contain six rows: the rows with the three largest GDP per ca
 
 Produce a scatterplot of Canada’s life expectancy vs. GDP per capita using ggplot2, without defining a new variable. That is, after filtering the gapminder data set, pipe it directly into the ggplot() function. Ensure GDP per capita is on a log scale.
 ```{r}
+# life expectancy vs. GDP per capita
+# do not create a new variable, pipe filters directly into plot
+gapminder %>% 
+  filter(country == "Canada") %>% 
+  ggplot(aes(x = gdpPercap, y = lifeExp)) +
+  geom_point(colour = "royalblue1", shape = 16) +
+  scale_x_log10("GDP per capita", labels = scales::dollar_format()) +
+  ylab("Life Expectancy (yrs)") +
+  theme_bw()
+  
+```
+
+
+# Exercise 2
+
+Explore individual variables in _dplyr_
+Pick one __categorical variable__ and one __quantitative variable__ to explore.
+Answer the following questions in whichever way you think is appropriate, using dplyr:
+
+-1. What are possible values (or range, whichever is appropriate) of each variable?
+-2. What values are typical? What’s the spread? What’s the distribution? Etc., tailored to the variable at hand.
+* Feel free to use summary stats, tables, figures.
+
+### 1 -- categorical variable: continent (and countries in each)
+
+```{r exercise2}
+## What are possible values (or range, whichever is appropriate) of each variable
+# --- 
+# how many continents are there in the gapminder dataset?
+str(gapminder$continent)
+# what are they?
+unique(gapminder$continent)
+
+# how many countries are in each continent 
+gapminder %>% 
+  group_by(continent) %>% 
+  summarize(countries = n()) %>% 
+  kable(caption = "number of countries by continent, 'gapminder'",
+        col.names = c("Continent", "Country Count"))
+
+# plot continents with their GDP per capita and life expectancy 
+# x axis on a log scale
+# get fancy with facet wrapping (multiple panels)
+gapminder %>%
+  ggplot(aes(x = gdpPercap, y = lifeExp)) + 
+  geom_point() + 
+  facet_wrap(~continent) + 
+  geom_point() + 
+  geom_smooth(method = "loess") + 
+  facet_wrap(~continent, ncol=1) +
+  scale_x_log10("GDP per capita", labels = scales::dollar_format()) 
+```
+There are five continents in the gapminder dataset. Africa has the most countries, followed by America (North, Central, South), then Asia and Europe, and Oceania 
+ has the fewest countries. 
+ 
+ ### 2 -- quantitative variable: GDP
+```{r}
+# What values are typical? What’s the spread? What’s the distribution? Etc., tailored to the variable at hand.
+
+# check the 'summary' stats
+gapminder %>% 
+  group_by(country) %>% 
+  summary()
+
+# long way
+# by continent,
+# what's the mean, relative standard deviation, mode, min and max GDP per capita?
+gapminder %>% 
+  group_by(continent) %>% 
+  summarize(mean_gdpp = mean(gdpPercap),
+            sd_gdpp = sd(gdpPercap),
+            rsd_gdpp = (sd(gdpPercap) / mean_gdpp) * 100, 
+            med_gdpp = median(gdpPercap),
+            min_gdpp = min(gdpPercap),
+            max_gdpp = max(gdpPercap)) %>% 
+  kable()
+
+# what if you first multiple by population to get GDP? 
+gapminder %>%
+  mutate(gdpBill = round(gdpPercap*pop/10^9, digits = 2)) %>% 
+  group_by(continent) %>% 
+  summarize(mean_gdp = mean(gdpBill),
+            sd_gdp = sd(gdpBill),
+            rsd_gdp = (sd(gdpBill) / mean_gdp) * 100, 
+            med_gdp = median(gdpBill),
+            min_gdp = min(gdpBill),
+            max_gdp = max(gdpBill)) %>% 
+  kable()
+
+# try plotting it
+# put GDP on a log scale again
+gapminder %>% 
+  ggplot(aes(x = continent, y = gdpPercap)) +
+  geom_boxplot() +
+  labs(y = "GDP per capita",
+       x = "") +
+  scale_y_log10("GDP per capita", labels = scales::dollar_format())
+
+gapminder %>% 
+  ggplot(aes(x = continent, y = pop)) +
+  geom_boxplot() +
+  scale_y_log10("Population (log)")
+
+# arranging?
+gapminder %>% 
+  group_by(continent) %>% 
+  select(gdpPercap, pop, continent) %>% 
+  summarise(mean_gdp = mean(gdpPercap),
+          sd_gdp = sd(gdpPercap),
+          rsd_gdp = (sd(gdpPercap) / mean_gdp) * 100, 
+          mean_pop = mean(pop),
+          sd_pop = sd(pop),
+          rsd_pop = (sd(pop) / mean_pop) * 100) %>% 
+  kable()
+# that's a lot of numbers
+```
+
+
+# Exercise 3: Explore various plot types
+
+Make two plots that have some value to them. That is, plots that someone might actually consider making for an analysis. Just don’t make the same plots we made in class – feel free to use a data set from the datasets R package if you wish.
+
+* A scatterplot of two quantitative variables.
+* One other plot besides a scatterplot.
+
+Note: You don’t have to use all the data in every plot! It’s fine to filter down to one country or a small handful of countries.
+```{r Exercise3}
+
+# 2 scatter plots
+# these are similar facet plots like I plotted in Exercise 2 -- because I like it
+
+# life expectancy per capita over time
+gapminder %>%
+gapminder %>%
+  ggplot(aes(x = year, y = lifeExp)) + 
+  geom_point() +
+  geom_smooth(method = "loess") +
+  facet_wrap(~ continent, ncol = 1) +
+  labs(x = "", y = "Life Expectancy")
+
+# GDP per capita over time
+gapminder %>%
+  ggplot(aes(x = year, y = gdpPercap)) + 
+  geom_point() + 
+  geom_smooth(method = "loess") +
+  facet_wrap(~ continent, ncol = 1) +
+  scale_y_log10("GDP per capita", labels = scales::dollar_format()) +
+  labs(x = "")
 
 ```
+
+One other plot (not a scatter plot)
+
+```{r histogram}
+
+# histograms show distribution of a quantitative variable
+# 'geom_freqpoly()'
+# shows distribution like a histogram but with lines instead of shaded bars
+gapminder %>% 
+  ggplot(aes(x = lifeExp, color = continent)) +
+  theme_bw() +
+  labs(x = "Life Expectancy (yrs)", y = "distribution frequency count") +
+  geom_freqpoly()
+
+```
+  
+# Recycling (Optional) 
+
+Rubrics:
+
+    reasoning
+        How well did you reason through the scenario?
+
+For people who want to take things further.
+
+Evaluate this code and describe the result. Presumably the analyst’s intent was to get the data for Rwanda and Afghanistan. Did they succeed? Why or why not? If not, what is the correct way to do this?
+
+```{r}
+
+# provided code
+filter(gapminder, country == c("Rwanda", "Afghanistan")) %>% 
+  kable()  # I added the kable call for easier comparison between this and my code below
+```
+It does not appear that this method of filtering delivered the desired results. It looks like data from Rwanda and Afghanistan for overlapping years were ommitted, resulting in each country having data provided every decade: Afghanistan had data for every ten years ending in 7 (e.g. 1957, 1967, 1977, etc.) while Rwanda had data for every ten years ending in 2 (e.g. 1952, 1962, 1972, etc.).
+I think the problem is associated with trying to filter country based on a vector of names. When the country filter is explicitly defined as Rwanda OR Afghanistan, the result is a tibble twice as long as the original output. This method results in data for both countries on overlapping years.
+
+```{r}
+# try some other options to see if the results agree
+gapminder %>% 
+  filter(country == "Rwanda" | country == "Afghanistan") %>% 
+  kable()
+``` 
+
+
+# Tibble display (Optional) 
+
+Present numerical tables in a more attractive form using knitr::kable() for small tibbles (say, up to 10 rows), and DT::datatable() for larger tibbles.
+
+_I believe I incorporated this into my code already_ 
+:smiley:
+
+
