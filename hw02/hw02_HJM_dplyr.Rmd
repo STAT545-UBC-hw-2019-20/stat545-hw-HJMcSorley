@@ -2,7 +2,7 @@
 title: 'Assignment 2: Gapminder and ''dplyr'''
 author: "Hannah McSorley"
 date: "21/09/2019"
-output: html_document
+output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
@@ -13,10 +13,11 @@ knitr::opts_chunk$set(echo = TRUE)
 The Objective of this assignment is the practice using ggplot2 and dplyr to explore and visualize the gapminder dataset.
 
 ```{r}
-library(gapminder)
-library(tidyverse)  # included package 'dplyr'
-library(tsibble)
-library(knitr)  # tidy tables
+suppressPackageStartupMessages(library(gapminder))
+suppressPackageStartupMessages(library(tidyverse))  # included package 'dplyr'
+suppressPackageStartupMessages(library(tsibble))
+suppressPackageStartupMessages(library(knitr))  # tidy tables
+suppressPackageStartupMessages(library(DT))  # tidy dataframe tables for HTML
 ```
 
 ## 'dplyr' function focus
@@ -35,7 +36,8 @@ gapminder %>%
   dplyr::filter(between(year, 1970, 1979),
                 country == "Puerto Rico" | country == "Yemen, Rep." | country == "Zimbabwe")
 
-# countries were selected randomly using the function 'sample_n()' which selects n number of rows randomly
+# countries were selected randomly using the function 'sample_n()' 
+# sample_n() selects n number of rows randomly
 # gapminder %>% filter(between(year, 1970, 1979)) %>% sample_n(size = 3)
 
 # I want to use this filtered dataset again, so save it as a new object
@@ -63,18 +65,33 @@ Filter gapminder to all entries that have experienced a drop in life expectancy.
 gapminder %>% 
   arrange(country, year) %>% 
   mutate(change_lifeExp = tsibble::difference(lifeExp)) %>% 
-  filter(change_lifeExp < 0)
+  filter(change_lifeExp < 0) %>% 
+  head() %>%
+  kable(digits = 2)
   
-# unclear intruction about including a new variable for the increase in life expectancy... when we're filtering for the drop in life expectancy
+# unclear intruction about including a new variable for the increase in life expectancy... 
+# when we're filtering for the drop in life expectancy
 
 # maybe something that identifes whether there was an increase or decrease?
 gapminder %>% 
   arrange(country, year) %>% 
   drop_na() %>% 
   mutate(change_lifeExp = tsibble::difference(lifeExp),
-         incr_lifeExp = (change_lifeExp > 0))  
-# provides TRUE or FALSE indicator of whether the lifeExp increased for that entry, relative to the previous data
+         incr_lifeExp = (change_lifeExp > 0)) %>%
+  head() %>%  
+  kable(digits = 2)
+# provides TRUE or FALSE indicator of whether the lifeExp increased for that entry,
+# relative to the previous data
 
+# filter the above to include only entries that have had a drop in life expectancy
+gapminder %>% 
+  arrange(country, year) %>% 
+  drop_na() %>% 
+  mutate(change_lifeExp = tsibble::difference(lifeExp),
+         incr_lifeExp = (change_lifeExp > 0)) %>% 
+  filter(incr_lifeExp == FALSE) %>% 
+  select(country:change_lifeExp) %>% 
+  kable(digits = 2, caption = "drop in life expectancy")
 ```
 
 # 1.4 Advanced Filtering
@@ -82,16 +99,31 @@ gapminder %>%
 Filter gapminder so that it shows the max GDP per capita experienced by each country. Hint: you might find the max() function useful here.
 ```{r}
 # create a variable for the maximum GDP per capita in each country
-
 gapminder %>% 
   group_by(country) %>%
   mutate(max_gdp = max(gdpPercap)) %>% 
-  filter(gdpPercap == max_gdp)
+  filter(gdpPercap == max_gdp) %>% 
+  head() %>% 
+  kable(digits = 2)
 ```
 ## 1.4 Alternate
 __OR__ 
 
 Filter gapminder to contain six rows: the rows with the three largest GDP per capita, and the rows with the three smallest GDP per capita. Be sure to not create any intermediate objects when doing this (with, for example, the assignment operator). Hint: you might find the sort() function useful, or perhaps even the dplyr::slice() function.
+```{r}
+# use above code to add max gdpPercap
+# filter to 3 highest max_gdp and 3 lowest max_gdp
+
+# NOPE -- didn't get it this time.
+# gapminder %>% 
+  #group_by(country) %>%
+  #mutate(max_gdp = max(gdpPercap)) %>% 
+  #filter(gdpPercap == max_gdp) %>%
+  #arrange(max_gdp) %>% 
+  #filter(between(row_number(), 1, 3) & between(row_number(), n(), (n()-3)))
+
+```
+
 
 # 1.5
 
@@ -120,7 +152,7 @@ Answer the following questions in whichever way you think is appropriate, using 
 -2. What values are typical? What’s the spread? What’s the distribution? Etc., tailored to the variable at hand.
 * Feel free to use summary stats, tables, figures.
 
-### 1 -- categorical variable: continent (and countries in each)
+## 1 -- categorical variable: continent (and countries in each)
 
 ```{r exercise2}
 ## What are possible values (or range, whichever is appropriate) of each variable
@@ -152,14 +184,15 @@ gapminder %>%
 There are five continents in the gapminder dataset. Africa has the most countries, followed by America (North, Central, South), then Asia and Europe, and Oceania 
  has the fewest countries. 
  
- ### 2 -- quantitative variable: GDP
+ ## 2 -- quantitative variable: GDP
 ```{r}
-# What values are typical? What’s the spread? What’s the distribution? Etc., tailored to the variable at hand.
+# What values are typical? What’s the spread? What’s the distribution? Etc., 
+# tailored to the variable at hand.
 
 # check the 'summary' stats
 gapminder %>% 
   group_by(country) %>% 
-  summary()
+  summary() 
 
 # long way
 # by continent,
@@ -172,7 +205,7 @@ gapminder %>%
             med_gdpp = median(gdpPercap),
             min_gdpp = min(gdpPercap),
             max_gdpp = max(gdpPercap)) %>% 
-  kable()
+  kable(digits = 2, caption = "GDP per capita by continent")
 
 # what if you first multiple by population to get GDP? 
 gapminder %>%
@@ -184,7 +217,21 @@ gapminder %>%
             med_gdp = median(gdpBill),
             min_gdp = min(gdpBill),
             max_gdp = max(gdpBill)) %>% 
-  kable()
+  kable(digits = 2, caption = "GDP by continent")
+
+# how about summarise GDP per capita and population?
+gapminder %>% 
+  group_by(continent) %>% 
+  select(gdpPercap, pop, continent) %>% 
+  summarise(mean_gdp = mean(gdpPercap),
+          sd_gdp = sd(gdpPercap),
+          rsd_gdp = (sd(gdpPercap) / mean_gdp) * 100, 
+          mean_pop = mean(pop),
+          sd_pop = sd(pop),
+          rsd_pop = (sd(pop) / mean_pop) * 100) %>% 
+  kable(digits = 2, caption = "GDP per capita and population")
+# yuck. that's a lot of numbers
+
 
 # try plotting it
 # put GDP on a log scale again
@@ -195,23 +242,11 @@ gapminder %>%
        x = "") +
   scale_y_log10("GDP per capita", labels = scales::dollar_format())
 
+# plot population also, because I think they're related
 gapminder %>% 
   ggplot(aes(x = continent, y = pop)) +
   geom_boxplot() +
   scale_y_log10("Population (log)")
-
-# arranging?
-gapminder %>% 
-  group_by(continent) %>% 
-  select(gdpPercap, pop, continent) %>% 
-  summarise(mean_gdp = mean(gdpPercap),
-          sd_gdp = sd(gdpPercap),
-          rsd_gdp = (sd(gdpPercap) / mean_gdp) * 100, 
-          mean_pop = mean(pop),
-          sd_pop = sd(pop),
-          rsd_pop = (sd(pop) / mean_pop) * 100) %>% 
-  kable()
-# that's a lot of numbers
 ```
 
 
@@ -229,7 +264,6 @@ Note: You don’t have to use all the data in every plot! It’s fine to filter 
 # these are similar facet plots like I plotted in Exercise 2 -- because I like it
 
 # life expectancy per capita over time
-gapminder %>%
 gapminder %>%
   ggplot(aes(x = year, y = lifeExp)) + 
   geom_point() +
@@ -278,7 +312,8 @@ Evaluate this code and describe the result. Presumably the analyst’s intent wa
 
 # provided code
 filter(gapminder, country == c("Rwanda", "Afghanistan")) %>% 
-  kable()  # I added the kable call for easier comparison between this and my code below
+  kable(digits = 2, caption = "original code")  
+# I added the kable call for easier comparison between this and my code below
 ```
 It does not appear that this method of filtering delivered the desired results. It looks like data from Rwanda and Afghanistan for overlapping years were ommitted, resulting in each country having data provided every decade: Afghanistan had data for every ten years ending in 7 (e.g. 1957, 1967, 1977, etc.) while Rwanda had data for every ten years ending in 2 (e.g. 1952, 1962, 1972, etc.).
 I think the problem is associated with trying to filter country based on a vector of names. When the country filter is explicitly defined as Rwanda OR Afghanistan, the result is a tibble twice as long as the original output. This method results in data for both countries on overlapping years.
@@ -287,7 +322,7 @@ I think the problem is associated with trying to filter country based on a vecto
 # try some other options to see if the results agree
 gapminder %>% 
   filter(country == "Rwanda" | country == "Afghanistan") %>% 
-  kable()
+  kable(digits = 2, caption = "modified code")
 ``` 
 
 
