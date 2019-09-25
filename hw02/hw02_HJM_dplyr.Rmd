@@ -1,0 +1,99 @@
+---
+title: 'Assignment 2: Gapminder and ''dplyr'''
+author: "Hannah McSorley"
+date: "21/09/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+# Homework Assignment 2
+
+The Objective of this assignment is the practice using ggplot2 and dplyr to explore and visualize the gapminder dataset.
+
+```{r}
+library(gapminder)
+library(tidyverse)  # included package 'dplyr'
+```
+
+## 'dplyr' function focus
+Within the 'dplyr' library, important functions to employ are:
+
+* _filter()_: a tidy way to subset _in-situ_
+* _%>%_: Piping to simplify multiple actions on a dataset
+
+#1.1 filter()
+Subset the 'gapminder' data to three countries in the 1970's using the 'filter()' function.
+
+```{r filter}
+
+# filter for the 1970's for three countries
+gapminder %>% 
+  dplyr::filter(between(year, 1970, 1979),
+                country == "Puerto Rico" | country == "Yemen, Rep." | country == "Zimbabwe")
+
+# countries were selected randomly using the function 'sample_n()' which selects n number of rows randomly
+# gapminder %>% filter(between(year, 1970, 1979)) %>% sample_n(size = 3)
+
+# I want to use this filtered dataset again, so save it as a new object
+seventies_three <- gapminder %>% 
+  dplyr::filter(between(year, 1970, 1979),
+                country == "Puerto Rico" | country == "Yemen, Rep." | country == "Zimbabwe")
+```
+
+#1.2 pipe
+Use the pipe operator %>% to select “country” and “gdpPercap” from your filtered dataset in 1.1.
+
+```{r pipe}
+
+# subset the dataset created in 1.1
+seventies_three %>% 
+  select(country, gdpPercap)
+```
+# 1.3 Advanced Filtering 
+
+Filter gapminder to all entries that have experienced a drop in life expectancy. Be sure to include a new variable that’s the increase in life expectancy in your tibble. Hint: you might find the lag() or diff() functions useful.
+
+```{r lagfilter}
+# calculate the difference in life expectancy over time for each country
+# filter for those with a drop in life expectancy 
+gapminder %>% 
+  arrange(country, year) %>% 
+  mutate(change_lifeExp = tsibble::difference(lifeExp)) %>% 
+  filter(change_lifeExp < 0)
+  
+# unclear intruction about including a new variable for the increase in life expectancy... when we're filtering for the drop in life expectancy
+
+# maybe something that identifes whether there was an increase or decrease?
+gapminder %>% 
+  arrange(country, year) %>% 
+  drop_na() %>% 
+  mutate(change_lifeExp = tsibble::difference(lifeExp),
+         incr_lifeExp = (change_lifeExp > 0))  
+# provides TRUE or FALSE indicator of whether the lifeExp increased for that entry, relative to the previous data
+
+```
+
+# 1.4 Advanced Filtering
+
+Filter gapminder so that it shows the max GDP per capita experienced by each country. Hint: you might find the max() function useful here.
+```{r}
+# create a variable for the maximum GDP per capita in each country
+
+gapminder %>% 
+  group_by(country) %>%
+  mutate(max_gdp = max(gdpPercap)) %>% 
+  filter(gdpPercap == max_gdp)
+```
+## 1.4 Alternate
+__OR__ 
+
+Filter gapminder to contain six rows: the rows with the three largest GDP per capita, and the rows with the three smallest GDP per capita. Be sure to not create any intermediate objects when doing this (with, for example, the assignment operator). Hint: you might find the sort() function useful, or perhaps even the dplyr::slice() function.
+
+# 1.5
+
+Produce a scatterplot of Canada’s life expectancy vs. GDP per capita using ggplot2, without defining a new variable. That is, after filtering the gapminder data set, pipe it directly into the ggplot() function. Ensure GDP per capita is on a log scale.
+```{r}
+
+```
