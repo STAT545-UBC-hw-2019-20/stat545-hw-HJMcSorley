@@ -83,7 +83,6 @@ _Note_: There is no legend in this plot; I wasn't able to separate the geoms fro
 
 
 
-
 ______________________________________
 
 #Task Option 3
