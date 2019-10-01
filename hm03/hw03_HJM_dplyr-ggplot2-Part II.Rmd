@@ -1,30 +1,74 @@
 ---
-title: 'Assignment 2: Gapminder and ''dplyr'''
+title: 'Assignment 3: dplyr/ggplot2 Part II'
 author: "Hannah McSorley"
-date: "21/09/2019"
+date: "Due: 01/10/2019"
 output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
-# Homework Assignment 2
+# Homework Assignment 3
 
-The Objective of this assignment is the practice using ggplot2 and dplyr to explore and visualize the gapminder dataset.
+The Objective of this assignment is to use the dplyr package to manipulate and explore a dataset, and to create accompanying visualizations with ggplot2. This is an extension of the Homework 02 assignment, and will continue the exploration of the 'gapminder' dataset. Three of six tasks were chosen to complete Homework Assignment 03, each task should produc:
+    *a tibble, using dplyr as your data manipulation tool;
+    *an accompanying plot of data from the tibble, using ggplot2 as your visualization tool; and
+    *some dialogue about what your tables/figures show (doesn’t have to be much).
+
 
 ```{r}
-suppressPackageStartupMessages(library(gapminder))
-suppressPackageStartupMessages(library(tidyverse))  # included package 'dplyr'
+suppressPackageStartupMessages(library(gapminder))  # data set
+suppressPackageStartupMessages(library(tidyverse))  
+# tidyverse includes package 'dplyr' and ggplot2
 suppressPackageStartupMessages(library(tsibble))
 suppressPackageStartupMessages(library(knitr))  # tidy tables
 suppressPackageStartupMessages(library(DT))  # tidy dataframe tables for HTML
 ```
 
-## 'dplyr' function focus
-Within the 'dplyr' library, important functions to employ are:
+#Task Option 2
+_Get the maximum and minimum of GDP per capita for all continents._
 
-* _filter()_: a tidy way to subset _in-situ_
-* _%>%_: Piping to simplify multiple actions on a dataset
+Using dplyr and the piping operator, this code summarizes the gapminder data set into each continent's minimum and maximum GDP per capita, and notes the country associated with each value. 
+```{r}
+str(gapminder)  # structure
+
+# minimum and maximum GDP per capita for all continents
+# add the corresponding country for the min/max also
+# add a GDP variable (GDP/captia * population)
+# sort from smallest to largest
+gapminder %>% 
+  group_by(continent) %>% 
+  summarize(gdpPercap_min = min(gdpPercap),
+            country_min = country[gdpPercap == gdpPercap_min],
+            gdpPercap_max = max(gdpPercap), 
+            country_max = country[gdpPercap == gdpPercap_max]) %>% 
+  arrange(gdpPercap_min)
+
+
+# plot continents with their GDP per capita 
+# hightlight the min and max with box plots
+# y axis on a log scale
+gapminder %>%
+  ggplot(aes(x = continent, y = gdpPercap, group = continent, size = gdpPercap == min(gdpPercap))) +
+  #geom_boxplot() +
+  geom_jitter(aes(fill = continent), alpha = 0.5, shape = 21) +
+  scale_y_log10("GDP per capita", labels = scales::dollar_format()) + 
+  theme_light() 
+
+# I was trying to add additional markers on the plot for continental min and max gdp... but can only get one (min)
+```
+
+
+#Task Option 3
+_Look at the spread of GDP per capita within the continents._
+
+* check this out: https://www.stat.ubc.ca/~jenny/STAT545A/hw03_dataAggregation.html
+
+#Task Option 5
+_How is life expectancy changing over time on different continents?_
+
+
+______________________________________
 
 #1.1 filter()
 Subset the 'gapminder' data to three countries in the 1970's using the 'filter()' function.
