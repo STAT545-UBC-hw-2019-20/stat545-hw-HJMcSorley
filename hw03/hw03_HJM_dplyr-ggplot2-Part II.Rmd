@@ -2,32 +2,35 @@
 title: 'Assignment 3: dplyr/ggplot2 Part II'
 author: "Hannah McSorley"
 date: "Due: 01/10/2019"
-output: pdf_document
+output: 
+  html_document:
+    theme: cerulean
+editor_options: 
+  chunk_output_type: inline
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
-# Homework Assignment 3
+## Homework Assignment 3
 
-The Objective of this assignment is to use the dplyr package to manipulate and explore a dataset, and to create accompanying visualizations with ggplot2. This is an extension of the Homework 02 assignment, and will continue the exploration of the 'gapminder' dataset. Three of six tasks were chosen to complete Homework Assignment 03, each task should produc:
-    *a tibble, using dplyr as your data manipulation tool;
-    *an accompanying plot of data from the tibble, using ggplot2 as your visualization tool; and
-    *some dialogue about what your tables/figures show (doesn’t have to be much).
+The Objective of this assignment is to use the dplyr package to manipulate and explore a data set, and to create accompanying visualizations with ggplot2. This is an extension of the Homework 02 assignment, and will continue the exploration of the 'gapminder' dataset. Three of six tasks were chosen to complete Homework Assignment 03, each task produces:
+
+  * __a tibble__, using dplyr as your data manipulation tool;
+  * an accompanying __plot__ of data from the tibble (using ggplot2); and
+  * some __dialogue__ about what the tables & figures show (doesn’t have to be much).
 
 
-```{r}
+```{r warning=FALSE}
 suppressPackageStartupMessages(library(gapminder))  # data set
-suppressPackageStartupMessages(library(tidyverse))  
-# tidyverse includes package 'dplyr' and ggplot2
-suppressPackageStartupMessages(library(knitr))  # tidy tables
-suppressPackageStartupMessages(library(DT))  # tidy dataframe tables for HTML
-suppressPackageStartupMessages(library(ggridges))
+suppressPackageStartupMessages(library(tidyverse))  # so tidy
+suppressPackageStartupMessages(library(knitr))      # tidy tables
+suppressPackageStartupMessages(library(ggridges))   # density ridge plots
 ```
 
-#1: Task Option 2
+## Part 1: Task Option 2
 
-_Get the maximum and minimum of GDP per capita for all continents._
+__Get the maximum and minimum of GDP per capita for all continents.__
 
 Here, I used dplyr and the piping operator to summarize the gapminder data set for each continent's minimum and maximum GDP per capita. In addition, the country associated with each continent's min and max GDP per capita is noted. 
 
@@ -46,20 +49,19 @@ gapminder %>%
             ww_Max. = paste(" (", year[gdpPercap == gdpPercap_max], ") ", 
                             country[gdpPercap == gdpPercap_max], sep = "")) %>% 
   arrange(gdpPercap_min) %>% 
-  kable(digits = 0, caption = "Extreme GDPs per capita by continent",
+  kable(digits = 0, 
+        caption = "Table 1: Minimum and maximum GDPs per capita by continent",
         col.names = c("Continent", 
                       "Min. GDP/capita ($)", 
                       "when/where Min. occurred",
                       "Max. GDP/capita ($)", 
                       "when/where Max. occurred"))
-
 ```
 
 Overall, the lowest GDP per capita was 241 USD which was recorded in Africa (Democratic Republic of Congo) in 2002.The maximum GDP per capita in the gapminder data set was recorded in Asia (Kuwait) in 1957 at 113,523 USD. 
-The continent of Africa had its lowest GDP in 2002, and highest in 1977. Asia experienced both minimum and maximum GDP in the 1950's (1952 and 1957, respectfully). Europe appears to have generally increased its GDP over time, as the lowest was recorded in 1952 and the highest was recorded in 2007. The Americas experienced both minimum and maximum continental GDP per capita in 2007, where the minimum occured in Haiti and the maximum occured in the Uniter States. Oceania had lowest GDP per capita in 1952 and highest in 2007, both occurred in Australia.     
+The continent of Africa had its lowest GDP in 2002, and highest in 1977. Asia experienced both minimum and maximum GDP in the 1950's (1952 and 1957, respectfully). Europe appears to have generally increased its GDP over time, as the lowest was recorded in 1952 and the highest was recorded in 2007. The Americas experienced both minimum and maximum continental GDP per capita in 2007, where the minimum occurred in Haiti and the maximum occurred in the United States. Oceania had lowest GDP per capita in 1952 and highest in 2007, both occurred in Australia.     
 
-```{r one-plot}
-
+```{r one-plot, out.width = "100%"}
 # plot: GDP per capita for each continent 
 # hightlight the min and max with box plots
 # y axis on a log scale
@@ -68,136 +70,144 @@ gapminder %>%
   geom_boxplot(alpha = 0.2) +
   geom_jitter(aes(fill = continent), alpha = 0.5, shape = 21) +
   scale_y_log10("GDP per capita (USD)", labels = scales::dollar_format()) + 
-  xlab("Continent") +
+  labs(x = "Continent", 
+       caption = "Figure 1: GDP per capita (gapminder data set). Triangles indicate minimum and maximum values for each continent.") +
   theme_light() +
   theme(legend.position = "none") +
   stat_summary(fun.y = min, geom = "point", shape = 24, size = 3, inherit.aes = TRUE) +
   stat_summary(fun.y = max, geom = "point", shape = 25, size = 3, inherit.aes = TRUE) 
-
-# I could only get the min and max triangles to show in the same legend, which looked weird
 ```
 
-This plot shows GDP per capita in each continent. The boxplots show the distribution of GDP data in each continent, while the triangle markers indicate the minimum and maximum values for each continent and the scatter points show all the data available in the gapminder data set.
+Figure 1 shows GDP per capita in each continent: under-laid boxplots show the distribution of GDP data in each continent, while the triangle markers indicate the minimum and maximum values for each continent and the scatter points show all the GDP data available in the gapminder data set.
 
 _Note_: There is no legend in this plot; I wasn't able to separate the geoms from one another in the legend, so I removed it entirely.
 
 
+## Part 2: Task Option 3
 
-______________________________________
+__Look at the spread of GDP per capita within the continents.__
 
-#Task Option 3
+To address this task simple statistical parameters were summarized, including the mean, standard deviation (SD), relative standard deviation (RSD). Table 2 summarizes these values which showcase the spread of GDP per capita data in the gapminder data set. 
 
-_Look at the spread of GDP per capita within the continents._
-
-* check this out: https://www.stat.ubc.ca/~jenny/STAT545A/hw03_dataAggregation.html
-
-```{r INPROGRESS}
+```{r two-tibble}
 # tibble
 # what's the mean, relative standard deviation, mode, min and max GDP per capita?
 gapminder %>% 
   group_by(continent) %>% 
   summarize(mean_gdpp = mean(gdpPercap),
             sd_gdpp = sd(gdpPercap),
-            rsd_gdpp = (sd(gdpPercap) / mean_gdpp) * 100, 
+            rsd_gdpp = (sd(gdpPercap) / mean_gdpp) * 100, # RSD = SD relative to mean 
             min_gdpp = min(gdpPercap),
             med_gdpp = median(gdpPercap),
             max_gdpp = max(gdpPercap)) %>% 
-  kable(digits = 0, caption = "GDP per capita by continent",
-        col.names = c("continent", "Mean GDP ($)", "S.D (+/- $)", "RSD (+/- %)", "Min ($)", "Median ($)", "Maximum ($)"))
-
-# plot boxplot
-# put GDP on a log scale again
-gapminder %>% 
-  ggplot(aes(x = continent, y = gdpPercap)) +
-  geom_boxplot() +
-  labs(y = "GDP per capita", x = "") +
-  scale_y_log10("GDP per capita", labels = scales::dollar_format()) +
-  theme_light()
-
-# plot ridge plot
-gapminder %>% 
-  ggplot(aes(x = gdpPercap, y = continent, colour = continent)) +
-  ggridges::geom_density_ridges(aes(fill = continent), alpha = 0.2) +
-  ylab("") +
-  scale_x_log10("GDP per capita", labels = scales::dollar_format()) +
-  theme_light()
+  kable(digits = 0, 
+        caption = "Table 2: GDP per capita by continent (in $USD)",
+        col.names = c("continent", 
+                      "Mean GDP ($)", 
+                      "SD (± $)", 
+                      "RSD (± %)", 
+                      "Minimum ($)", 
+                      "Median ($)", 
+                      "Maximum ($)"))
 ```
 
+Table 2 shows that there is a wide range of GDP per capita values on each continent. in Africa and Asia, the relative standard deviation (RSD) was greater than one hundred percent (indicating the standard deviation was greater than the mean). Visualizing the data will help to clarify the variation and range of GDP per capita in each continent. 
 
-#Task Option 5
-_How is life expectancy changing over time on different continents?_
+```{r two-plots, out.width = "100%"}
+# plot boxplot
+# put GDP on a log scale again
+bp <- gapminder %>% 
+  ggplot(aes(x = continent, y = gdpPercap, colour = continent)) +
+  geom_boxplot(aes(fill = continent), alpha = 0.2) +
+  labs(y = "GDP per capita", x = "") +
+  scale_y_log10("GDP per capita", labels = scales::dollar_format()) +
+  theme_light() +
+  theme(legend.position = "none")
 
+# plot ridge plot
+rp <- gapminder %>% 
+  ggplot(aes(x = gdpPercap, y = continent, colour = continent)) +
+  ggridges::geom_density_ridges(aes(fill = continent), alpha = 0.2) +
+  scale_x_log10("GDP per capita", labels = scales::dollar_format()) +
+  labs(y= "") +
+  theme_light()
 
-```{r INPROGRES}
-# calculate the difference in life expectancy over time for each country
-# filter for those with a drop in life expectancy 
+# bring both plots together with 'gridExtra' package
+gridExtra::grid.arrange(bp, rp, 
+                        ncol = 1,
+                        name = "Figure 2: Distribution of GDP per capita in five continents, shown as boxplot (upper panel) and density ridge plot (lower panel)")
+# error: name does not show as figure caption... something about 'grobs'
+```
+
+To compliment Table 2, the distribution of GDP per capita in each continent were potted as box plots and density ridge plots (Figure 2). Both plots show the distribution and concentration of data across the range of GDP per capita values; in my opinion, the ridge plot provides a more accessible visual representation of irregular concentrations of GDP data. For example, there is a roughly trimodal (three peaks) distribution to the GDP per capita in Asia, whereas Oceania has a unimodal distribution. Europe and Americas also have approximately unimodal distributions of GDP per capita, but they are skewed in opposite directions: European GDP per capita is more concentrated in larger values, whereas the Americas GDP per capita is less concentrated around higher values. The relative placement of the box in the boxplot indicates the skew of the data, but does not indicate the modal distribution like the density ridge plot shows.      
+
+# Part 3: Task Option 5
+
+__How is life expectancy changing over time on different continents?__
+
+Change in life expectancy over time on each continent is summarized in Table 3, which shows the median life expectancy for every five years of data.   
+
+```{r three-tibble}
+# calculate the median life expectancy over time for each continent
 gapminder %>% 
   dplyr::arrange(continent, year) %>% 
-  group_by(continent) %>% 
-  summarize(tenyr_chng = tsibble::difference(lifeExp, lag = 10)) %>% 
-  #filter(change_lifeExp < 0) %>% 
-  #head() %>%
-  kable(digits = 2)
+  group_by(continent, year) %>% 
+  summarize(med_lifeExp = median(lifeExp)) %>% 
+  pivot_wider(id_cols = continent,
+              names_from = year,
+              values_from = med_lifeExp) %>% 
+  kable(digits = 0, 
+        caption = "Table 3: Median life expectancy over time by continent")
   
-# unclear intruction about including a new variable for the increase in life expectancy... 
-# when we're filtering for the drop in life expectancy
+```
 
-# maybe something that identifes whether there was an increase or decrease?
-gapminder %>% 
-  arrange(country, year) %>% 
-  drop_na() %>% 
-  mutate(change_lifeExp = tsibble::difference(lifeExp),
-         incr_lifeExp = (change_lifeExp > 0)) %>%
-  head() %>%  
-  kable(digits = 2)
-# provides TRUE or FALSE indicator of whether the lifeExp increased for that entry,
-# relative to the previous data
+Reading Table 3 from left to right provides a summary of median life expectancy over time on each continent. It's difficult to imagine the full range of life expectancy changes from this table, so visual indicators were created.
 
-# filter the above to include only entries that have had a drop in life expectancy
-gapminder %>% 
-  arrange(country, year) %>% 
-  drop_na() %>% 
-  mutate(change_lifeExp = tsibble::difference(lifeExp),
-         incr_lifeExp = (change_lifeExp > 0)) %>% 
-  filter(incr_lifeExp == FALSE) %>% 
-  select(country:change_lifeExp) %>% 
-  kable(digits = 2, caption = "drop in life expectancy")
-
-# 2 scatter plots
-# these are similar facet plots like I plotted in Exercise 2 -- because I like it
-
-# life expectancy per capita over time
-gapminder %>%
-  ggplot(aes(x = year, y = lifeExp)) + 
-  geom_point() +
-  geom_smooth(method = "loess") +
-  facet_wrap(~ continent, ncol = 1) +
-  labs(x = "", y = "Life Expectancy")
-
-
-# plot life expectancy over time in each continent 
-# get fancy with facet wrapping (multiple panels)
-gapminder %>%
-  ggplot(aes(x = year, y = lifeExp, colour = continent)) + 
-  geom_point() + 
-  geom_smooth(method = "loess", colour = "black") + 
+```{r three-plots, out.width = "100%"}
+# plot: life expectancy over time in each continent 
+# add a trend line (using loess not linear)
+sp <- gapminder %>%
+  ggplot(aes(x = year, y = lifeExp, fill = continent)) + 
+  geom_jitter(shape = 21, alpha = 0.5) + 
+  geom_smooth(method = "loess", colour = "gray45") + 
   facet_wrap(~continent, nrow=1) +
   theme_light() +
-  labs(y = "Life Expectancy", x = "")
-## it would be better to have years (x-axis) on an angle (90*) or to only show every 20
+  labs(y = "Life Expectancy", x = "") +
+  theme(axis.text.x = element_text(angle = 90),  # rotate tick labels for clarity
+        strip.background = element_rect(colour = "gray45", fill = "white"),  # details
+        strip.text.x = element_text(colour = "gray45"),
+        legend.position = "none")  # hide this legend
 
-
-# 'geom_freqpoly()'
+# plot: 'geom_freqpoly()'
 # shows distribution (like a histogram) but with lines instead of shaded bars
-gapminder %>% 
+fp <- gapminder %>% 
   ggplot(aes(x = lifeExp, color = continent)) +
-  theme_bw() +
+  theme_light() +
   labs(x = "Life Expectancy (yrs)", y = "distribution frequency count") +
   geom_freqpoly()
 
+# bring both plots together with 'gridExtra' package
+gridExtra::grid.arrange(sp, fp, ncol = 1,
+                        name = "Figure 3: Life expectancy over time and relative distribution of life expectancy by continent")
+
 ```
   
+Figure 3 shows the life expectancy in each continent over time (upper panel) as well as the frequency distribution of life expectancy for each continent (lower panel). While the lower panel of Figure 3 does not show time-dependency, it does show the distribution of life expectancy in each continent (much like a histogram, but with lines rather than bars).  
+
+In general, each continent has had an increase in life expectancy over time. However, it appears that the life expectancy in Africa reached nearly steady state in the last ten years of gapminder data (1997 - 2007). There are also two points in Africa's life expectancy data that are lower than all others (in the early 1990's) which appear to coincide with the 1994 genocide in Rwanda. Oceania and Europe have had the highest life expectancies of the five continents and both continue to show an increasing trend. 
 
 
 
+_side note:_ 
+It appears that there is one country in europe that showed a considerable increase in the rate at which life expectancy increased.
+
+```{r followup}
+gapminder %>% filter(continent == "Europe") %>% 
+  ggplot(aes(x = year, y = lifeExp, colour = country)) +
+  geom_line() +
+  theme_light() +
+  labs(x = "", y = "European life expectancy")
+```
+
+I'm not sure how to extract that pink value that showed such a steep increase in life expectancy. 
 
