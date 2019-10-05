@@ -1,0 +1,151 @@
+---
+title: "Homework Assignment 4: Tidy Data and Joins "
+author: "Hannah McSorley"
+date: "Due 2019-10-08"
+output: 
+  html_document:
+    keep_md: true
+    theme: cerulean
+---
+
+## Assignment Objective
+
+The focus of this assignment is to practice problem solving in R using two key components of data wrangling: data aggregation and reshaping. In addition, data visualization with ggplo2 will be included. 
+The data used in this assignment includes 'gapminder' and ........ 
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, fig.align = "center")
+```
+
+```{r packages, warning = FALSE, message = FALSE}
+library(tidyverse)
+library(gapminder)
+```
+
+# Exercise 1: Univariate Data Reshaping 
+
+__Option 2__
+
+Three Goals:
+
+- 1. Reshape data into wider format
+- 2. Produce a plot of the wide data
+- 3. Re-lengthening the wider data
+
+This code creates two wide tibbles, with years/continents as either rows or columns.
+
+```{r E1 wider}
+# mutate and reshape data into wider format
+## use tidyr::pivot_wider()
+# A: rows = year, columns = continents
+A_wide <- gapminder %>% 
+  dplyr::arrange(continent, year) %>% 
+  group_by(continent, year) %>% 
+  summarize(med_lifeExp = median(lifeExp)) %>% 
+  tidyr::pivot_wider(id_cols = year,
+                         names_from = continent,
+                         values_from = med_lifeExp)
+# table
+kable(A_wide, digits = 0, 
+      caption = "Table 1A-Wide: continental median life expectancy")
+
+# B: rows = continents, columns = years
+B_wide <- gapminder %>% 
+  dplyr::arrange(continent, year) %>% 
+  group_by(continent, year) %>% 
+  summarize(med_lifeExp = median(lifeExp)) %>% 
+  tidyr::pivot_wider(id_cols = continent,
+                         names_from = year,
+                         values_from = med_lifeExp) 
+# table
+kable(B_wide, digits = 0, 
+      caption = "Table 1B-Wide: median life expectancy over time by continent")
+```
+
+Visually, it might be more intuitive to read Table 1B-Wide, with years progressing from left to right. However, it seems difficult to plot from that tibble shape, especially because the variables are numbers (years). 
+
+```{r E1 wide plot}
+# Produce a plot of (some of) the wide data
+# B (easy to read)
+B_wide %>% ggplot(aes(x = 1952, y = 2007)) + 
+  geom_point(colour = "magenta2") +
+  theme_light()
+# the data from Table 1-B is difficult to plot (at least for me)
+# the variables are numbers (years), and are treated as discrete numbers in ggplot
+
+# try plotting the data from Table 1A-Wide
+# A
+A_wide %>% ggplot(aes(x = year, y = Africa)) + 
+  geom_point(colour = "steelblue4") +
+  theme_light()
+# it's easier to plot a contient's median life expectancy over time from Table 1-A
+# trickier to plot multiple contients over time though...that's easier from long format
+
+# easy to plot one continent against another
+A_wide %>% ggplot(aes(x = Americas, y = Asia)) + 
+  geom_point(colour = "tomato") +
+  theme_light()
+```
+
+It seems that the data shape which is easiest to read, or most intuitive to present, is the most difficult to plot in R. Whereas longer tibbles are easier for R to read and plot. 
+
+```{r E1 longer}
+# Re-lengthening the wider data
+## use tidyr::pivot_longer()
+#A
+A_long <- A_wide %>% 
+  tidyr::pivot_longer(cols = Africa:Oceania,
+                      names_to = "continent",
+                      values_to = "median_lifeExp") %>% 
+  arrange(continent)
+# table
+kable(A_long, digits = 0, 
+      caption = "Table 1A-Long: continental median life expectancy")
+  
+# check:
+gapminder %>% 
+  dplyr::arrange(continent, year) %>% 
+  group_by(continent, year) %>% 
+  summarize(med_lifeExp = median(lifeExp))
+# Yes!
+
+# Re-lengthen the data from Table 1-B also
+B_long <- B_wide %>% 
+  tidyr::pivot_longer(cols = (2:13),
+                      names_to = "year",
+                      values_to = "median_lifeExp") %>% 
+  arrange(continent)
+# table
+kable(B_long, digits = 0, 
+      caption = "Table 1B-Long: continental median life expectancy")
+
+```
+
+# Exercise 2: Multivariate Data Reshaping 
+
+__Option 1__
+
+Two Goals:
+
+- 1. Reshape data into wider format
+- 2. Re-lengthening the wider data
+
+
+```{r E2 wider}
+# filter for two countries' lifeExp & gdpPercap
+# pivot_wider()
+# then pivot back (pivot_longer())
+gapminder %>% 
+  dplyr::arrange(country, year) %>% 
+  #group_by(country, year) %>% 
+  select(-pop, -continent) %>%
+  filter(country == "Guinea" | 
+           #country == "Namibia" | 
+           #country == "Puerto Rico" |
+           country == "Slovenia") %>%
+  pivot_wider(id_cols = year,
+              names_from = c(lifeExp, gdpPercap),
+              values_from = country)
+
+```
+
