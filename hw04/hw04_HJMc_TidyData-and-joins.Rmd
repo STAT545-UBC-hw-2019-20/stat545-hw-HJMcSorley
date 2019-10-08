@@ -11,7 +11,7 @@ output:
 ## Assignment Objective
 
 The focus of this assignment is to practice problem solving in R using two key components of data wrangling: data aggregation and reshaping. In addition, data visualization with ggplo2 will be included. 
-The data used in this assignment includes 'gapminder' and ........ 
+The data used in this assignment includes 'gapminder' (for Exercises 1 & 2), and two wedding-planning data sets (for Exercise 3).
 
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(echo = TRUE, warning = FALSE, fig.align = "center")
@@ -20,6 +20,8 @@ knitr::opts_chunk$set(echo = TRUE, warning = FALSE, fig.align = "center")
 ```{r packages, warning = FALSE, message = FALSE}
 library(tidyverse)
 library(gapminder)
+library(knitr)  # for tidy tables
+library(DT)     # for datatable in html
 ```
 
 # Exercise 1: Univariate Data Reshaping 
@@ -46,7 +48,7 @@ A_wide <- gapminder %>%
                          names_from = continent,
                          values_from = med_lifeExp)
 # table
-kable(A_wide, digits = 0, 
+knitr::kable(A_wide, digits = 0, 
       caption = "Table 1A-Wide: continental median life expectancy")
 
 # B: rows = continents, columns = years
@@ -58,7 +60,7 @@ B_wide <- gapminder %>%
                          names_from = year,
                          values_from = med_lifeExp) 
 # table
-kable(B_wide, digits = 0, 
+knitr::kable(B_wide, digits = 0, 
       caption = "Table 1B-Wide: median life expectancy over time by continent")
 ```
 
@@ -99,10 +101,9 @@ A_long <- A_wide %>%
                       values_to = "median_lifeExp") %>% 
   arrange(continent)
 # table
-kable(A_long, digits = 0, 
-      caption = "Table 1A-Long: continental median life expectancy")
+DT::datatable(A_long, caption = "Table 1A-Long: continental median life expectancy")
   
-# check:
+# check that you produced what you wanted:
 gapminder %>% 
   dplyr::arrange(continent, year) %>% 
   group_by(continent, year) %>% 
@@ -116,36 +117,122 @@ B_long <- B_wide %>%
                       values_to = "median_lifeExp") %>% 
   arrange(continent)
 # table
-kable(B_long, digits = 0, 
-      caption = "Table 1B-Long: continental median life expectancy")
+DT::datatable(B_long, caption = "Table 1B-Long: continental median life expectancy")
 
 ```
 
 # Exercise 2: Multivariate Data Reshaping 
-
-__Option 1__
 
 Two Goals:
 
 - 1. Reshape data into wider format
 - 2. Re-lengthening the wider data
 
+__Option 1__ 
+_Specifically_
+
+- 1. Make a tibble with one row per year, and columns for life expectancy and GDP per capita (or two other numeric variables) for two or more countries.
+- 2. Re-lengthen the data
+
 
 ```{r E2 wider}
 # filter for two countries' lifeExp & gdpPercap
 # pivot_wider()
 # then pivot back (pivot_longer())
-gapminder %>% 
+E2_wide <- gapminder %>% 
   dplyr::arrange(country, year) %>% 
-  #group_by(country, year) %>% 
   select(-pop, -continent) %>%
   filter(country == "Guinea" | 
-           #country == "Namibia" | 
-           #country == "Puerto Rico" |
            country == "Slovenia") %>%
   pivot_wider(id_cols = year,
-              names_from = c(lifeExp, gdpPercap),
-              values_from = country)
+              names_from = country,
+              values_from = c(lifeExp, gdpPercap))
+knitr::kable(E2_wide, digits = c(0, 0, 0, 2, 2), 
+             caption = "Wide format: multivariate countries' GDP and life expectancy")
 
+```
+
+Take the wider tibble and pivot it back to long format. 
+```{r E2 longer}
+# filter for two countries' lifeExp & gdpPercap
+# pivot_wider()
+# then pivot back (pivot_longer())
+E2_longer <- E2_wide %>% 
+   pivot_longer(cols = -year,
+              names_to = c(".value", "Country"),
+              names_sep = "_",
+              values_to = c("lifeExp", "gdpPercap")) %>% 
+   arrange(Country)
+knitr::kable(E2_longer, digits = c(0, 0, 0, 2, 2), 
+             caption = "Wide format: multivariate countries' GDP and life expectancy")
+```
+
+
+# Exercise 3: Table Joins
+
+Read in the made-up wedding guestlist and email addresses:
+
+```{r E3 data}
+guest <- read_csv("https://raw.githubusercontent.com/STAT545-UBC/Classroom/master/data/wedding/attend.csv")
+email <- read_csv("https://raw.githubusercontent.com/STAT545-UBC/Classroom/master/data/wedding/emails.csv")
+
+# check the top of each data set:
+head(guest)
+head(email)
+```
+
+## 3.1
+
+For each guest in the guestlist (guest tibble), add a column for email address, which can be found in the email tibble.
+
+___Note:___
+Before joining these tibbles, I separated names that were listed (probably by wedding party) in the tibble 'email'. I found how to use 'strsplit()' with 'unlist()' to accomplish the unlisting on [StackOverflow](https://stackoverflow.com/questions/15347282/split-delimited-strings-in-a-column-and-insert-as-new-rows).
+
+
+```{r E3.1}
+# mutating join
+# add data from 'email' to 'guest'
+guest %>% 
+  left_join(email %>% 
+              mutate(guest = strsplit(as.character(guest), ", ")) %>% 
+              unnest(guest), # split the lists of guests from tibble 'email' 
+            by = c("name" = "guest")) %>%   # the two tibbles have different key names
+  DT::datatable(caption = "guestlist with emails")
+```
+
+
+## 3.2 
+
+Who do we have emails for, yet are not on the guestlist?
+
+I used _anti_join()_, a filtering join that drops observations from the primary tibble (x = 'email') which don't have a match in the joining/reference tibble (y = 'guest').
+
+Like E3.1, this code splits the string of names in the email data set into their own row before joining tibbles.
+
+```{r E3.2}
+# filtering join
+# find 'email' guests who are not on the 'guests' list
+# anti_join(x, y) drops all observations in x that have a match in y
+email %>% 
+  mutate(guest = strsplit(as.character(guest), ", ")) %>% 
+  unnest(guest) %>% 
+  anti_join(guest, by = c("guest" = "name")) %>% 
+  knitr::kable(caption = "Guests with emails who are not on the guestlist")
+
+```
+
+
+# 3.3 
+
+Make a guestlist that includes everyone we have emails for (in addition to those on the original guestlist). Again, separate the list of guests in 'email' into their own row before joining tibbles. 
+
+```{r E3.3}
+# make a super guestlist by joining both tibbles
+# superlist will have all the folks from 'guest' tibble, whether we have their email or not, as well as folks who we have email for who weren't included on the guestlist.
+full_join(guest, email %>% 
+            mutate(guest = strsplit(as.character(guest), ", ")) %>% 
+            unnest(guest), 
+          by = c("name" = "guest")) %>% 
+  DT::datatable(caption = "Super Guestlist: all wedding guests")
 ```
 
