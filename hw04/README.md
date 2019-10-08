@@ -10,4 +10,4 @@ Key functions used were:
   * full_join()
   
 :point_right: the completed assignment can be viewed in rendered html on my GitHub Pages here:
-https://stat545-ubc-hw-2019-20.github.io/stat545-hw-HJMcSorley/hw04_HJMc_TidyData-and-joins.html
+https://stat545-ubc-hw-2019-20.github.io/stat545-hw-HJMcSorley/hw04/hw04_HJMc_TidyData-and-joins.html
