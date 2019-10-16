@@ -1,0 +1,149 @@
+---
+title: "Homework Assignment 5: Factor and figure management"
+author: "Hannah McSorley"
+date: "Due 2019-10-17"
+output: 
+  html_document:
+    keep_md: true
+    theme: cerulean
+---
+
+## Assignment Objective
+
+The aim of this homework assignment is to improve understanding of data portability with the goal of improving skills for collaborative data analysis, data sharing and results visualization.
+
+_My personal goal for this homework is to better comprehend the power, use and manipulation of factors, because I think my thesis research will be improved by incorporating factors into my data analysis._
+
+This assignment includes:
+
+* Write data to file and load it back into R
+* Explain the value of the here::here package
+* Improve a figure (or make one from scratch), using new knowledge, e.g., control the color scheme, use factor levels, smoother mechanics.
+* Reorder a factor in a principled way based on the data and demonstrate the effect in arranged data and in figures.
+* Implement visualization design principles.
+
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, fig.align = "center")
+```
+
+```{r packages, warning = FALSE, message = FALSE}
+library(tidyverse)
+library(gapminder)
+library(knitr)  # for tidy tables
+library(DT)     # for datatable in html
+library(here)
+```
+
+# Exercise 1: Explain the value of the here::here package (10%)
+
+Rubric:
+
+    5%: Writing will be used.
+    5%: Accuracy
+
+Read through the blog post by Malcolm Barrett where he outlines why one should use the here::here package in RStudio projects.
+
+Task: In your own words, summarize the value of the here::here package in 250 words or fewer.
+
+---
+The working directory is the location that your R file (.Rmd, .R, .Rproj) resides in. The base R command _getwd()_ returns an absolute file to the current working directory.
+
+....... when working on a project, it's good practice to read in data from that folder, and to save R outputs into that folder also... directory contains folders. It will be necessary to call on the working directory to load and save files. However, the working directory is unique to each device that is used. For example, I have a laptop (Notebok PC) as well as a desktop PC that I work on; the directory for this homework assignment is different on each computer:
+
+```
+# laptop PC directory: 
+"D:\Documents\git_docs\STAT545\stat545-hw-HJMcSorley"
+
+# desktop PC directory: 
+
+```
+
+here::here() accomplishes the same task as the command: 
+```
+paste0(getwd(),"/file-name.extension"
+```
+here() is used to replace file.path() and the above function combination
+
+---
+
+
+# Exercise 2: Factor management (20%)
+
+Rubric:
+
+    10%: Accuracy
+    10%: Code quality
+
+Task: Choose one dataset (of your choice) and a variable to explore. After ensuring the variable(s) you’re exploring are indeed factors, you should:
+
+    Drop factor / levels;
+    Reorder levels based on knowledge from data.
+
+We’ve elaborated on these steps for the gapminder and singer data sets below.
+
+Explore the effects of re-leveling a factor in a tibble by:
+
+    comparing the results of arrange on the original and re-leveled factor.
+    Plotting a figure of before/after re-leveling the factor (make sure to assign the factor to an aesthetic of your choosing).
+
+These explorations should involve the data, the factor levels, and at least two figures (before and after.
+Elaboration for the gapminder data set
+
+Drop Oceania. Filter the Gapminder data to remove observations associated with the continent of Oceania. Additionally, remove unused factor levels. Provide concrete information on the data before and after removing these rows and Oceania; address the number of rows and the levels of the affected factors.
+
+```{r E2 factor levels}
+# check structure of the gapminder data set
+str(gapminder)
+
+# the variables country and continent are factors
+
+
+```
+
+Reorder the levels of country or continent. Use the forcats package to change the order of the factor levels, based on summarized information of one of the quantitative variables. Consider experimenting with a summary statistic beyond the most basic choice of the mean/median. Use the forcats package in the tidyverse for this, rather than the baseR function as.factor.
+
+
+# Exercise 3: File input/output (I/O) (20%)
+
+Rubric:
+
+    10%: Accuracy
+    10%: Code quality
+
+Task: Experiment with at least one of:
+
+    write_csv()/read_csv() (and/or TSV friends),
+    saveRDS()/readRDS(),
+    dput()/dget().
+
+You are expected to create something new, probably by filtering or grouped-summarization of your dataset (for e.g., Singer, Gapminder, or another dataset), export it to disk and then reload it back in using one of the packages above. You should use here::here() for reading in and writing out.
+
+With the imported data, play around with factor levels and use factors to order your data with one of your factors (i.e. non-alphabetically). For the I/O method(s) you chose, comment on whether or not your newly created file survived the round trip of writing to file then reading back in.
+
+
+# Exercise 4: Visualization design (20%)
+
+Rubric:
+
+    5%: Writing
+    5%: Accuracy
+    10%: Vis quality
+
+Go back through your previous assignments and class participation activities and find figures you created prior to the last week of the course. Recreate at least one figure in light of something you learned in the recent class meetings about visualization design and color.
+
+Task: Create a side-by-side plot and juxtapose your first attempt (show the original figure as-is) with a revised attempt after some time spent working on it and implementing principles of effective plotting principles. Comment and reflect on the differences.
+Exercise 5: Writing figures to file (10%)
+
+    5%: Accuracy
+    5%: Code quality
+
+Task: Use ggsave() to explicitly save a plot to file. Include the exported plot as part of your repository and assignment.
+
+Then, use ![Alt text](/path/to/img.png) to load and embed that file into your report. You can play around with various options, such as:
+
+    Arguments of ggsave(), such as width, height, resolution or text scaling.
+    Various graphics devices, e.g. a vector vs. raster format.
+    Explicit provision of the plot object p via ggsave(..., plot = p). Show a situation in which this actually matters.
+
+
