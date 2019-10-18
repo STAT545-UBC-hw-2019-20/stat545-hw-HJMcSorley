@@ -12,4 +12,4 @@ This assignment includes:
 * Reorder a factor in a principled way based on the data and demonstrate the effect in arranged data and in figures.
 * Implement visualization design principles.
 
-Here is a link to the rendered html file:  https://stat545-ubc-hw-2019-20.github.io/stat545-hw-HJMcSorley/hw05_Factors-n-Figures_HJMc.html
+Here is a link to the rendered html file:  https://stat545-ubc-hw-2019-20.github.io/stat545-hw-HJMcSorley/hw05/hw05_Factors-n-Figures_HJMc.html
