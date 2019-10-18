@@ -40,65 +40,25 @@ library(readr)  # read in delimited files
 
 __Task: In your own words, summarize the value of the here::here package in 250 words or fewer.__
 
-The working directory is the location that your R file (.Rmd, .R, .Rproj) resides in, and the location of Rproj takes precedent. The base R command ```getwd()``` returns an absolute file path to the current working directory. Calling on an absolute file path within code becomes cumbersome and problematic when working across multiple devices. ```here::here()``` follows logical progressive steps to detect the root directory and working paths within a project directory in a way that works on all operating systems and across multiple devices. Using ```here()``` means that no one need to update calls to absolute paths for root directories for file management.  
-If you have all of your files in a single directory, such as this example directory ("research_folder-1"):
-
-```
-research_folder-1
-  field-data.csv
-  lab-data.csv
-  figure-1.png
-  chapter-001.Rmd
-  chapter-001.html
-  chapter-001.R
-  research_folder-1.Rproj
-```
-Then ```here()``` returns the same result as ```getwd()``, both locate the project root directory.
-
-```
-# this here package command:
+Data management and reproducible workflow are easier with ```here::here()```, which locates directory files without specifying file-paths and works across operating systems and platforms.
+```getwd()``` returns an absolute file-path to the working directory and if _.R_ and _.Rmd_ files exist in one folder, then ```here()``` and ```getwd()``` return the same result. 
+ ```
+ # circumstantially equivalent:
 here::here()
-
-# is equivalent to this base command:
 base::getwd()
 ```
-
-And you could save a new file to your working directory with this command:
-
+And a file can be saved like this:
 ```
-# save file to working directory
-paste0(getwd(), "/file-name.extension"
+write_csv(paste0(base::getwd(), "/file-name.csv")
 ```
-
-However, for a more organized directory that contains multiple sub-folders such as:
-
-```
-research_folder-1
-  input-data
-    field-data.csv
-    lab-data.csv
-  output-data
-    figure-1.png
-  rmd
-    chapter-001.Rmd
-    chapter-001.html
-  scripts
-    chapter-001.R
-  research_folder-1.Rproj
-```
-You would need to manually adjusted the command to ```paste0(getwd(), "/output-data/file-name.extension"```. But if you reorganize the folders in the directory, you will need to manually update the file path in your code.
-
-Alternatively, using ```here::here()``` you can read and save outputs to the correct folders by including arguments for path components that are below the project root, for example:
-
-```
+However, R identifies the root directory of _.R_ and _.Rmd_ files differently: ```here()``` and ```getwd()``` will return different results for a .Rmd file in a sub-folder. By default, R recognizes the folder containing .Rproj as the working-directory for _.R_ files; and the folder containing .Rmd as the working-directory for .Rmd files. Directory path recognition matters for reading and writing files (i.e. input/output).
+Storing all files associated with a project in a single folder could eliminate directory confusion, but generally it’s better to organize files in sub-folders. In base-R, file input/output to sub-folders requires manually specifying an absolute file-path, which is not good practice because a path is unique to each device/platform.
+```here::here()``` follows logical steps to detect the main project folder (root directory, ‘here’) and sub-folders are accessed with arguments for path components:
+  ```
 # read input data
-read_csv(here("input-data", "field-data.csv"))
-
-# save output data
-write_csv(here("output-data", "results.csv"))
+read_csv(here("sub-folder", "file-name.csv"))
 ```
-I have only just been introduced to ```here::here()``` so I haven't yet developed a deep appreciation for it, but based on readings and exploration in R, the value I see in this functionality is in data and file management and reproducible work-flow. The ability to work across devices (e.g from Notebook PC to desktop PC to MacBook) without manually updating absolute file paths for each device is truly efficient and streamlined. ```here()``` is reproducible and is designed to work with Rstudio projects, it functions across operating systems and platforms. I think the ability to easily read and save files with organized folder locations is the most appealing component of the ```here()``` function. Data management can become overwhelming in a research project; any tool that streamlines the process is a tool worth using.   
-
+```here::here()```defines file paths relative to the top level of an RProject file (the main project folder), meaning input/output files remain organized. Research data management can become overwhelming; any tool that reduced file-anxiety and streamlines R-workflow is a tool worth using.
 
 
 # Exercise 2: Factor management (20%)
